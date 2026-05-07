@@ -1,6 +1,6 @@
 [package]
 name = "maca-helper"
-version = "0.1.0"
+version = "0.1.1"
 description = "Maca Helper"
 authors = ["Maca Helper"]
 edition = "2021"
