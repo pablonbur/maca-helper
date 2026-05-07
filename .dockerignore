@@ -1,0 +1,12 @@
+node_modules
+dist
+src-tauri/target
+target
+.git
+.DS_Store
+backups
+exports
+seed/snippets.local.json
+seed/*.private.json
+*.backup.json
+*maca-helper-backup*.json

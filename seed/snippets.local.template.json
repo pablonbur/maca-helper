@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "categories": [
+    { "id": "favorites", "name": "Favoritos", "order": 1 },
+    { "id": "daily", "name": "Datos del dia", "order": 2 },
+    { "id": "quick", "name": "Frases rapidas", "order": 3 },
+    { "id": "variable", "name": "Plantillas variables", "order": 4 }
+  ],
+  "snippets": [
+    {
+      "id": "fixed-private-1",
+      "kind": "fixed",
+      "title": "Cambiar titulo",
+      "categoryId": "daily",
+      "favorite": true,
+      "enabled": true,
+      "content": "Cambiar contenido privado",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "template-private-1",
+      "kind": "template",
+      "title": "Cambiar nombre de plantilla",
+      "categoryId": "variable",
+      "favorite": true,
+      "enabled": true,
+      "templateId": "template-private",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "templates": [
+    {
+      "id": "template-private",
+      "name": "Template privado",
+      "pattern": "{apertura} {estado}{separador?} {cierre?}",
+      "slotIds": ["apertura", "estado", "separador", "cierre"],
+      "enabled": true
+    }
+  ],
+  "blocks": [
+    {
+      "id": "apertura",
+      "name": "Apertura",
+      "optional": false,
+      "variants": ["Cambiar variante 1", "Cambiar variante 2"]
+    },
+    {
+      "id": "estado",
+      "name": "Estado",
+      "optional": false,
+      "variants": ["Cambiar bloque principal"]
+    },
+    {
+      "id": "separador",
+      "name": "Separador",
+      "optional": true,
+      "variants": [",", ".", "!"]
+    },
+    {
+      "id": "cierre",
+      "name": "Cierre",
+      "optional": true,
+      "variants": ["Cambiar cierre 1", "Cambiar cierre 2"]
+    }
+  ],
+  "settings": {
+    "appName": "Maca Helper",
+    "copyToastMs": 1200,
+    "rememberLastGenerated": true,
+    "avoidImmediateRepeats": true
+  }
+}
