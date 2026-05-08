@@ -1,8 +1,8 @@
 # Maca Helper ✨
 
-Maca Helper es una app local para Windows para guardar frases, textos, links e instrucciones, y copiarlos al portapapeles con un click.
+Maca Helper es una app local para Windows para guardar frases, links, datos frecuentes e instrucciones, y copiarlos al portapapeles con un click.
 
-La idea es simple: abrís la app, tocás una tarjeta, ves el aviso de copiado y pegás manualmente donde quieras usar ese texto.
+La idea es simple: abrís la app, tocás un renglón, ves el aviso de copiado y pegás manualmente donde quieras usar ese texto.
 
 > Maca Helper no se conecta a servicios externos, no usa IA online, no automatiza otras apps y no pega ni envía nada por su cuenta.
 
@@ -12,18 +12,18 @@ La idea es simple: abrís la app, tocás una tarjeta, ves el aviso de copiado y 
 
 Si solo querés instalar Maca Helper como usuario final, no necesitás programar ni instalar herramientas técnicas.
 
-### Opción recomendada: descargar el instalador
+### Descargar el instalador
 
 1. Entrá a la [última release de GitHub](https://github.com/pablonbur/maca-helper/releases/latest).
-2. Bajá el instalador de Windows desde la sección **Assets**.
-   - Recomendado: archivo `.exe`.
-   - Alternativa: archivo `.msi`.
+2. Bajá el instalador de Windows desde **Assets**.
+   - Recomendado: `.exe`.
+   - Alternativa: `.msi`.
 3. Ejecutá el instalador.
 4. Abrí **Maca Helper**.
-5. Hacé click en cualquier tarjeta para copiar su texto.
-6. Pegá manualmente el texto donde lo necesites.
+5. Importá tu JSON privado si tenés uno.
+6. Tocá cualquier renglón para copiar.
 
-Eso es todo. Para usar la app no necesitás:
+Para usar la app no necesitás:
 
 - Node.js
 - npm
@@ -33,7 +33,7 @@ Eso es todo. Para usar la app no necesitás:
 - Visual Studio Build Tools
 - Clonar este repositorio
 
-### Opción desde repo descargado
+### Instalar desde repo descargado
 
 Si descargaste o clonaste este repo y querés instalar la última versión publicada:
 
@@ -45,22 +45,45 @@ Ese script descarga la última release desde GitHub y abre el instalador de Wind
 
 ---
 
-## 🧭 Primer recorrido
+## 🧭 Cómo se usa
 
-Cuando abrís la app por primera vez vas a ver datos de ejemplo genéricos.
+La pantalla principal está pensada para ser rápida y compacta:
 
-Desde ahí podés:
+- Arriba tenés accesos rápidos, como un dato corto, un link actual o un grupo de links.
+- Abajo tenés una lista de frases en renglones.
+- Click en un renglón copia el texto completo.
+- `Copiar` hace lo mismo, por si preferís usar el botón.
+- `Editar` abre el editor lateral.
+- `Otra` aparece en frases variables y genera una variante nueva.
+- El buscador filtra por título, categoría o texto.
+- `Claro/Oscuro` cambia el tema visual.
+- `Importar` carga un JSON propio.
+- `Exportar` guarda un backup JSON.
+- `Avanzado` permite editar bloques de variables.
 
-- **Copiar**: tocá una tarjeta o el botón `Copiar`.
-- **Buscar**: usá el buscador para filtrar por título, contenido o categoría.
-- **Crear**: tocá `Nuevo` para agregar un texto fijo.
-- **Editar**: tocá `Editar` en una tarjeta.
-- **Favoritos**: tocá `Fav` para mostrar ese item arriba.
-- **Borrar**: tocá `Borrar`; la app pide confirmación.
-- **Generar otra variante**: en tarjetas variables, tocá `Otra`.
-- **Editar bloques**: tocá `Bloques` para cambiar las variantes usadas por las plantillas.
-- **Exportar**: guardá un backup JSON con tus datos.
-- **Importar**: cargá un JSON propio o un backup anterior.
+También podés seleccionar una parte del texto con el mouse sin que se copie accidentalmente.
+
+---
+
+## 🎨 Diseño actual
+
+La app usa dark mode por defecto, con una estética violeta/gris inspirada en apps tipo Discord/Codex.
+
+La paleta principal es:
+
+| Token | Valor |
+| --- | --- |
+| Fondo base | `#0F1117` |
+| Surface | `#171A22` |
+| Surface elevada | `#232838` |
+| Texto principal | `#F5F7FF` |
+| Texto secundario | `#B8C1D9` |
+| Lilac chrome | `#C7A6FF` |
+| Mint spectral | `#72F0DD` |
+| Crimson relic | `#FF5C7A` |
+| Gold parchment | `#D8B66A` |
+
+El tema elegido se guarda localmente en la máquina.
 
 ---
 
@@ -70,14 +93,12 @@ Tenés tres caminos simples.
 
 ### 1. Editar desde la app
 
-Es lo más fácil para empezar:
-
 1. Abrí Maca Helper.
 2. Tocá `Nuevo`.
 3. Cargá título, categoría y contenido.
 4. Guardá.
 
-También podés tocar `Editar` sobre cualquier tarjeta de ejemplo y reemplazarla por tus propios textos.
+También podés tocar `Editar` sobre un renglón existente y reemplazarlo por tus propios textos.
 
 ### 2. Importar un JSON
 
@@ -116,7 +137,7 @@ Hay tres archivos importantes:
 | `seed/snippets.local.template.json` | Sí | Molde público para crear tu propio JSON privado. |
 | `seed/snippets.local.json` | No | Archivo privado recomendado para frases reales. Está ignorado por Git. |
 
-El archivo privado es este:
+El archivo privado recomendado es:
 
 ```txt
 seed/snippets.local.json
@@ -164,8 +185,9 @@ La app:
 
 - ✅ Copia texto al portapapeles.
 - ✅ Funciona local y offline.
-- ✅ Permite editar, crear, borrar, buscar e importar/exportar datos.
+- ✅ Permite crear, editar, buscar e importar/exportar datos.
 - ✅ Genera variantes usando bloques locales curados.
+- ✅ Permite tema oscuro/claro.
 
 La app no:
 
@@ -254,8 +276,8 @@ Workflow:
 Para publicar una nueva versión:
 
 ```powershell
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.2
+git push origin v0.1.2
 ```
 
 GitHub Actions se encarga de:
@@ -307,13 +329,13 @@ scripts/                     Scripts de instalación y desarrollo
 V1 funcional:
 
 - App local/offline.
-- Datos iniciales genéricos.
-- Copiado con toast.
+- Instalador Windows publicado en GitHub Releases.
+- UI compacta de renglones copiables.
+- Dark mode violeta por defecto, con toggle claro/oscuro.
+- Accesos rápidos arriba.
 - Búsqueda.
-- Favoritos.
-- Crear/editar/borrar snippets fijos.
+- Crear/editar snippets fijos.
 - Regenerar plantillas variables.
-- Editar bloques.
+- Edición avanzada de bloques.
 - Importar/exportar JSON.
 - Tests unitarios del generador.
-- Release Windows con instaladores `.exe` y `.msi`.
