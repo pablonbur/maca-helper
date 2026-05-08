@@ -1,4 +1,4 @@
-import { escapeHtml } from "../html";
+import { escapeAttribute, escapeHtml } from "../html";
 
 export interface CategorySectionView {
   id: string;
@@ -9,15 +9,18 @@ export interface CategorySectionView {
 }
 
 export function renderCategorySection(section: CategorySectionView): string {
+  const sectionDomId = `section-${section.id}`;
+  const sectionClass = `category-${section.id.replace(/[^a-z0-9_-]/gi, "-")}`;
+
   return `
-    <section class="category-section" aria-labelledby="section-${section.id}">
+    <section class="category-section ${escapeAttribute(sectionClass)}" aria-labelledby="${escapeAttribute(sectionDomId)}">
       <div class="section-heading">
-        <h2 id="section-${section.id}">${escapeHtml(section.title)}</h2>
+        <h2 id="${escapeAttribute(sectionDomId)}">${escapeHtml(section.title)}</h2>
         <span>${section.count}</span>
       </div>
       ${
         section.count > 0
-          ? `<div class="snippet-grid">${section.cardsHtml}</div>`
+          ? `<div class="snippet-list">${section.cardsHtml}</div>`
           : `<p class="empty-state">${escapeHtml(section.emptyText)}</p>`
       }
     </section>

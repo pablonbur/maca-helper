@@ -12,5 +12,5 @@ export function renderToast(toast: ToastState | null): string {
     return "";
   }
 
-  return `<div class="toast toast-${toast.tone}" role="status">${escapeHtml(toast.message)}</div>`;
+  return `<div class="toast toast-${toast.tone}" role="status" aria-atomic="true">${escapeHtml(toast.message)}</div>`;
 }

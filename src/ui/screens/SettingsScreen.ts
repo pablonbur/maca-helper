@@ -57,5 +57,5 @@ export function renderSettingsModal(data: AppData): string {
     <button class="primary-button" type="submit" form="settings-form">Guardar</button>
   `;
 
-  return renderModal({ title: "Bloques y configuración", body, footer, size: "wide" });
+  return renderModal({ title: "Variables avanzadas", body, footer, size: "wide" });
 }

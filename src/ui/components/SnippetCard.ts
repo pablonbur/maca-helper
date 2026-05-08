@@ -5,38 +5,34 @@ export interface SnippetCardView {
   snippet: SnippetItem;
   text: string;
   categoryName: string;
+  copied: boolean;
 }
 
 export function renderSnippetCard(view: SnippetCardView): string {
-  const { snippet, text, categoryName } = view;
+  const { snippet, text, categoryName, copied } = view;
   const kindLabel = snippet.kind === "fixed" ? "Fijo" : "Variable";
-  const favoriteLabel = snippet.favorite ? "Quitar favorito" : "Favorito";
-  const favoriteText = snippet.favorite ? "Favorito" : "Fav";
   const disabledClass = snippet.enabled ? "" : "is-disabled";
+  const copiedClass = copied ? "is-copied" : "";
   const regenerationButton =
     snippet.kind === "template"
-      ? `<button class="secondary-button" type="button" data-action="regenerate" data-id="${escapeAttribute(snippet.id)}">Otra</button>`
+      ? `<button class="secondary-button row-button" type="button" data-action="regenerate" data-id="${escapeAttribute(snippet.id)}">Otra</button>`
       : "";
+  const copiedBadge = copied ? `<span class="copied-badge">Copiado</span>` : `<span class="kind-pill">${kindLabel}</span>`;
 
   return `
-    <article class="snippet-card ${disabledClass}" data-card-id="${escapeAttribute(snippet.id)}" tabindex="0">
-      <div class="snippet-card-main">
+    <article class="snippet-row ${disabledClass} ${copiedClass}" data-card-id="${escapeAttribute(snippet.id)}" tabindex="0" aria-label="Copiar ${escapeAttribute(snippet.title)}">
+      <div class="snippet-row-main">
         <div class="snippet-card-topline">
-          <h3>${escapeHtml(snippet.title)}</h3>
-          <span class="kind-pill">${kindLabel}</span>
+          <span class="snippet-category">${escapeHtml(categoryName)}</span>
+          <span class="snippet-title">${escapeHtml(snippet.title)}</span>
+          ${copiedBadge}
         </div>
         <p class="snippet-text">${escapeHtml(text)}</p>
-        <div class="snippet-meta">
-          <span>${escapeHtml(categoryName)}</span>
-          ${snippet.enabled ? "" : "<span>Deshabilitado</span>"}
-        </div>
       </div>
       <div class="snippet-actions">
-        <button class="primary-button" type="button" data-action="copy" data-id="${escapeAttribute(snippet.id)}">Copiar</button>
+        <button class="primary-button row-button" type="button" data-action="copy" data-id="${escapeAttribute(snippet.id)}">Copiar</button>
         ${regenerationButton}
-        <button class="secondary-button" type="button" data-action="edit" data-id="${escapeAttribute(snippet.id)}">Editar</button>
-        <button class="secondary-button" type="button" data-action="favorite" data-id="${escapeAttribute(snippet.id)}" aria-label="${favoriteLabel}">${favoriteText}</button>
-        <button class="danger-button" type="button" data-action="delete" data-id="${escapeAttribute(snippet.id)}">Borrar</button>
+        <button class="secondary-button row-button" type="button" data-action="edit" data-id="${escapeAttribute(snippet.id)}">Editar</button>
       </div>
     </article>
   `;

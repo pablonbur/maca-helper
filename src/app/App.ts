@@ -1,7 +1,7 @@
 import type { AppData, Category, SnippetItem, SnippetKind } from "../domain/types";
 import { generateFromTemplate } from "../domain/snippetGenerator";
 import { copyTextToClipboard } from "./events";
-import { createUiState, type UiState } from "./state";
+import { createUiState, saveThemePreference, type UiState } from "./state";
 import { saveAppData, saveGeneratedSnippets } from "../storage/appStorage";
 import { exportAppData, parseImportedAppData } from "../storage/importExport";
 import { renderModal } from "../ui/components/Modal";
@@ -11,6 +11,8 @@ import { renderHomeScreen } from "../ui/screens/HomeScreen";
 import { renderSettingsModal } from "../ui/screens/SettingsScreen";
 import { escapeAttribute, escapeHtml } from "../ui/html";
 
+const CARD_CLICK_COPY_DELAY_MS = 180;
+
 export function mountApp(root: HTMLElement): void {
   const app = new App(root);
   app.start();
@@ -19,6 +21,8 @@ export function mountApp(root: HTMLElement): void {
 class App {
   private state: UiState = createUiState();
   private toastTimer = 0;
+  private copyFlashTimer = 0;
+  private cardClickTimer = 0;
 
   constructor(private readonly root: HTMLElement) {
     this.root.addEventListener("click", (event) => void this.handleClick(event));
@@ -34,9 +38,11 @@ class App {
   }
 
   private render(): void {
+    document.documentElement.dataset.theme = this.state.theme;
     this.root.innerHTML = renderHomeScreen({
       appName: this.state.data.settings.appName,
       query: this.state.query,
+      theme: this.state.theme,
       sections: this.buildSections(),
       toast: this.state.toast,
       modalHtml: this.renderActiveModal(),
@@ -77,6 +83,7 @@ class App {
           snippet,
           text: this.getSnippetText(snippet),
           categoryName: this.getCategoryName(snippet.categoryId),
+          copied: this.state.copiedSnippetId === snippet.id,
         }),
       )
       .join("");
@@ -161,7 +168,7 @@ class App {
       <button class="primary-button" type="submit" form="snippet-form">Guardar</button>
     `;
 
-    return renderModal({ title, body, footer });
+    return renderModal({ title, body, footer, size: "side" });
   }
 
   private async handleClick(event: MouseEvent): Promise<void> {
@@ -199,6 +206,11 @@ class App {
       return;
     }
 
+    if (action === "toggle-theme") {
+      this.toggleTheme();
+      return;
+    }
+
     if (action === "export-json") {
       exportAppData(this.state.data);
       this.showToast("JSON exportado", "success");
@@ -220,8 +232,7 @@ class App {
     }
 
     if (action === "edit") {
-      this.state.editingSnippetId = id;
-      this.render();
+      this.openSnippetEditor(id);
       return;
     }
 
@@ -248,10 +259,17 @@ class App {
       return;
     }
 
+    if (hasSelectionInside(card)) {
+      return;
+    }
+
     const id = card.dataset.cardId;
 
     if (id) {
-      void this.copySnippet(id);
+      window.clearTimeout(this.cardClickTimer);
+      this.cardClickTimer = window.setTimeout(() => {
+        void this.copySnippet(id);
+      }, CARD_CLICK_COPY_DELAY_MS);
     }
   }
 
@@ -263,11 +281,14 @@ class App {
       return;
     }
 
+    if (hasSelectionInside(card)) {
+      return;
+    }
+
     const id = card.dataset.cardId;
 
     if (id) {
-      this.state.editingSnippetId = id;
-      this.render();
+      this.openSnippetEditor(id);
     }
   }
 
@@ -377,10 +398,31 @@ class App {
 
     try {
       await copyTextToClipboard(text);
-      this.showToast("Copiado", "success");
+      this.markSnippetCopied(id);
+      this.showToast(`Copiado: ${snippet.title}`, "success");
     } catch {
       this.showToast("No se pudo copiar", "error");
     }
+  }
+
+  private markSnippetCopied(id: string): void {
+    window.clearTimeout(this.copyFlashTimer);
+    this.state.copiedSnippetId = id;
+    this.copyFlashTimer = window.setTimeout(() => {
+      this.state.copiedSnippetId = null;
+      this.render();
+    }, 900);
+  }
+
+  private openSnippetEditor(id: string): void {
+    window.clearTimeout(this.cardClickTimer);
+    window.clearTimeout(this.copyFlashTimer);
+    window.clearTimeout(this.toastTimer);
+
+    this.state.copiedSnippetId = null;
+    this.state.toast = null;
+    this.state.editingSnippetId = id;
+    this.render();
   }
 
   private saveSnippetFromForm(form: HTMLFormElement): void {
@@ -520,6 +562,12 @@ class App {
     this.showToast("Borrado", "success");
   }
 
+  private toggleTheme(): void {
+    this.state.theme = this.state.theme === "dark" ? "light" : "dark";
+    saveThemePreference(this.state.theme);
+    this.render();
+  }
+
   private closeModal(shouldRender = true): void {
     this.state.editingSnippetId = null;
     this.state.isCreatingSnippet = false;
@@ -638,4 +686,20 @@ function foldSearch(value: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("es")
     .trim();
+}
+
+function hasSelectionInside(element: HTMLElement): boolean {
+  const selection = window.getSelection();
+
+  if (!selection || selection.isCollapsed || !selection.toString().trim()) {
+    return false;
+  }
+
+  const anchorNode = selection.anchorNode;
+  const focusNode = selection.focusNode;
+
+  return Boolean(
+    (anchorNode && element.contains(anchorNode)) ||
+      (focusNode && element.contains(focusNode)),
+  );
 }

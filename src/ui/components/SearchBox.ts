@@ -8,7 +8,7 @@ export function renderSearchBox(query: string): string {
         data-role="search"
         type="search"
         value="${escapeAttribute(query)}"
-        placeholder="Nombre, categoría o texto"
+        placeholder="Buscar frase, link o dato"
         autocomplete="off"
       />
     </label>
