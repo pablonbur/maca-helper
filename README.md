@@ -276,8 +276,8 @@ Workflow:
 Para publicar una nueva versión:
 
 ```powershell
-git tag v0.1.2
-git push origin v0.1.2
+git tag v0.1.3
+git push origin v0.1.3
 ```
 
 GitHub Actions se encarga de:
