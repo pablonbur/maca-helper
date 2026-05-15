@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "Default desktop permissions for Maca Helper.",
+  "windows": ["main"],
+  "permissions": ["dialog:default"]
+}

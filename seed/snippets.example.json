@@ -128,7 +128,7 @@
     }
   ],
   "settings": {
-    "appName": "Maca Helper",
+    "appName": "Maca helper",
     "copyToastMs": 1200,
     "rememberLastGenerated": true,
     "avoidImmediateRepeats": true

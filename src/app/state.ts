@@ -1,4 +1,9 @@
 import type { AppData, GeneratedSnippetMap } from "../domain/types";
+import type {
+  DepuradorConfig,
+  DepuradorResult,
+  DepuradorScheduleStatus,
+} from "../native/depurador";
 import type { ToastState } from "../ui/components/Toast";
 import { loadAppData, loadGeneratedSnippets } from "../storage/appStorage";
 
@@ -12,6 +17,14 @@ export interface UiState {
   editingSnippetId: string | null;
   isCreatingSnippet: boolean;
   settingsOpen: boolean;
+  depuradorOpen: boolean;
+  depuradorBusy: boolean;
+  depuradorBusyLabel: string | null;
+  depuradorConfig: DepuradorConfig | null;
+  depuradorResult: DepuradorResult | null;
+  depuradorSchedule: DepuradorScheduleStatus | null;
+  depuradorError: string | null;
+  depuradorMessage: string | null;
   copiedSnippetId: string | null;
   toast: ToastState | null;
 }
@@ -25,6 +38,14 @@ export function createUiState(): UiState {
     editingSnippetId: null,
     isCreatingSnippet: false,
     settingsOpen: false,
+    depuradorOpen: false,
+    depuradorBusy: false,
+    depuradorBusyLabel: null,
+    depuradorConfig: null,
+    depuradorResult: null,
+    depuradorSchedule: null,
+    depuradorError: null,
+    depuradorMessage: null,
     copiedSnippetId: null,
     toast: null,
   };

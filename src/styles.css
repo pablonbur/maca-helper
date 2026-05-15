@@ -86,6 +86,9 @@ textarea {
 button {
   min-width: 36px;
   min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 0 12px;
@@ -597,6 +600,7 @@ textarea {
 }
 
 .modal-footer {
+  flex-wrap: wrap;
   justify-content: flex-end;
   border-top: 1px solid var(--line);
   border-bottom: 0;
@@ -651,7 +655,8 @@ textarea {
 
 .checkbox-row label,
 .checkbox-column label,
-.checkbox-inline {
+.checkbox-inline,
+.form-grid label.checkbox-inline {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -675,6 +680,236 @@ textarea {
   gap: 10px;
   border-top: 1px solid var(--line);
   padding-top: 12px;
+}
+
+.depurador-form {
+  gap: 12px;
+}
+
+.depurador-wide-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.depurador-folder-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.depurador-folder-picker button {
+  min-width: 128px;
+}
+
+.depurador-field {
+  display: grid;
+  gap: 6px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.depurador-field > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.depurador-inline-option {
+  min-height: 42px;
+  width: 100%;
+  justify-content: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 11px;
+  background: var(--panel);
+}
+
+.depurador-inline-option input {
+  flex: 0 0 auto;
+}
+
+.depurador-quarantine-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 11px;
+  background: var(--panel-soft);
+}
+
+.depurador-quarantine-actions div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.depurador-quarantine-actions strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.depurador-quarantine-actions span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.depurador-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.depurador-status,
+.depurador-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.depurador-status span,
+.depurador-summary span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 9px;
+  color: var(--muted);
+  background: var(--panel-soft);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.depurador-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.depurador-muted {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.depurador-error {
+  margin: 0;
+  border: 1px solid rgba(255, 92, 122, 0.35);
+  border-radius: 8px;
+  padding: 10px 11px;
+  color: var(--rose);
+  background: var(--rose-soft);
+  font-weight: 800;
+}
+
+.depurador-message {
+  margin: 0;
+  border: 1px solid rgba(114, 240, 221, 0.28);
+  border-radius: 8px;
+  padding: 10px 11px;
+  color: var(--mint);
+  background: var(--mint-soft);
+  font-weight: 900;
+}
+
+.depurador-busy {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 11px;
+  color: var(--text);
+  background: var(--panel-soft);
+  font-weight: 900;
+}
+
+.depurador-spinner {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border: 3px solid rgba(199, 166, 255, 0.2);
+  border-top-color: var(--violet);
+  border-radius: 999px;
+  animation: depurador-spin 700ms linear infinite;
+}
+
+.depurador-table-wrap {
+  max-height: 230px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.depurador-table-wrap-muted {
+  border-style: dashed;
+  background: rgba(129, 139, 166, 0.06);
+}
+
+.depurador-list-title {
+  margin: 2px 0 -2px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.depurador-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.depurador-table th,
+.depurador-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 8px 9px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.depurador-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: var(--muted);
+  background: var(--panel-soft);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.depurador-table td {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.depurador-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.depurador-file-row {
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.depurador-file-row:hover td {
+  background: var(--panel-hover);
+}
+
+.depurador-file-row-ignored td {
+  color: var(--dim);
+}
+
+.depurador-errors {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--rose);
+  line-height: 1.4;
 }
 
 .visually-hidden {
@@ -712,6 +947,12 @@ textarea {
   }
 }
 
+@keyframes depurador-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 920px) {
   .app-header {
     grid-template-columns: 1fr;
@@ -746,6 +987,26 @@ textarea {
 
   .field-row {
     grid-template-columns: 1fr;
+  }
+
+  .depurador-wide-row {
+    grid-template-columns: 1fr;
+  }
+
+  .depurador-folder-picker {
+    grid-template-columns: 1fr;
+  }
+
+  .depurador-quarantine-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .depurador-action-buttons {
+    justify-content: stretch;
+  }
+
+  .depurador-action-buttons button {
+    flex: 1 1 160px;
   }
 
   .checkbox-column {

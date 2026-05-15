@@ -4,10 +4,25 @@ import { copyTextToClipboard } from "./events";
 import { createUiState, saveThemePreference, type UiState } from "./state";
 import { saveAppData, saveGeneratedSnippets } from "../storage/appStorage";
 import { exportAppData, parseImportedAppData } from "../storage/importExport";
+import {
+  getDepuradorConfig,
+  getDepuradorScheduleStatus,
+  isDepuradorAvailable,
+  openDepuradorQuarantineFolder,
+  previewDepuradorComprobantes,
+  recycleDepuradorQuarantine,
+  runDepuradorComprobantes,
+  saveDepuradorConfig,
+  selectDepuradorFolder,
+  setDepuradorSchedule,
+  type DepuradorConfig,
+  type DepuradorFile,
+} from "../native/depurador";
 import { renderModal } from "../ui/components/Modal";
 import type { CategorySectionView } from "../ui/components/CategorySection";
 import { renderSnippetCard } from "../ui/components/SnippetCard";
 import { renderHomeScreen } from "../ui/screens/HomeScreen";
+import { renderDepuradorModal } from "../ui/screens/DepuradorScreen";
 import { renderSettingsModal } from "../ui/screens/SettingsScreen";
 import { escapeAttribute, escapeHtml } from "../ui/html";
 
@@ -92,6 +107,18 @@ class App {
   private renderActiveModal(): string {
     if (this.state.settingsOpen) {
       return renderSettingsModal(this.state.data);
+    }
+
+    if (this.state.depuradorOpen) {
+      return renderDepuradorModal({
+        config: this.state.depuradorConfig,
+        result: this.state.depuradorResult,
+        schedule: this.state.depuradorSchedule,
+        busy: this.state.depuradorBusy,
+        busyLabel: this.state.depuradorBusyLabel,
+        error: this.state.depuradorError,
+        message: this.state.depuradorMessage,
+      });
     }
 
     if (this.state.isCreatingSnippet || this.state.editingSnippetId) {
@@ -206,6 +233,11 @@ class App {
       return;
     }
 
+    if (action === "open-depurador") {
+      await this.openDepurador();
+      return;
+    }
+
     if (action === "toggle-theme") {
       this.toggleTheme();
       return;
@@ -219,6 +251,36 @@ class App {
 
     if (action === "import-json") {
       this.root.querySelector<HTMLInputElement>('[data-role="import-input"]')?.click();
+      return;
+    }
+
+    if (action === "save-depurador") {
+      await this.saveDepuradorSettings();
+      return;
+    }
+
+    if (action === "choose-depurador-folder") {
+      await this.chooseDepuradorFolder();
+      return;
+    }
+
+    if (action === "preview-depurador") {
+      await this.previewDepurador();
+      return;
+    }
+
+    if (action === "run-depurador") {
+      await this.runDepurador();
+      return;
+    }
+
+    if (action === "open-depurador-quarantine") {
+      await this.openDepuradorQuarantine();
+      return;
+    }
+
+    if (action === "recycle-depurador-quarantine") {
+      await this.recycleDepuradorQuarantine();
       return;
     }
 
@@ -275,6 +337,13 @@ class App {
 
   private handleDoubleClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
+    const depuradorRow = target.closest<HTMLElement>("[data-depurador-path][data-depurador-list]");
+
+    if (depuradorRow) {
+      this.toggleDepuradorFile(depuradorRow.dataset.depuradorPath, depuradorRow.dataset.depuradorList);
+      return;
+    }
+
     const card = target.closest<HTMLElement>("[data-card-id]");
 
     if (!card || target.closest("button, input, textarea, select, a")) {
@@ -487,7 +556,7 @@ class App {
   private saveSettingsFromForm(form: HTMLFormElement): void {
     const formData = new FormData(form);
     const nextData: AppData = JSON.parse(JSON.stringify(this.state.data)) as AppData;
-    const appName = this.formString(formData, "appName").trim() || "Maca Helper";
+    const appName = this.formString(formData, "appName").trim() || "Maca helper";
     const toastMs = Number(this.formString(formData, "copyToastMs"));
 
     nextData.settings = {
@@ -520,6 +589,287 @@ class App {
     this.persist();
     this.persistGenerated();
     this.showToast("Bloques guardados", "success");
+  }
+
+  private async openDepurador(): Promise<void> {
+    this.state.depuradorOpen = true;
+    this.state.depuradorResult = null;
+    this.state.depuradorError = null;
+    this.state.depuradorMessage = null;
+    this.render();
+
+    if (!isDepuradorAvailable()) {
+      this.state.depuradorConfig = null;
+      this.state.depuradorSchedule = null;
+      this.state.depuradorError = "El depurador está disponible en la app de escritorio.";
+      this.render();
+      return;
+    }
+
+    await this.loadDepurador();
+  }
+
+  private async loadDepurador(): Promise<void> {
+    this.state.depuradorBusy = true;
+    this.state.depuradorBusyLabel = "Cargando configuración del depurador...";
+    this.render();
+
+    try {
+      const [config, schedule] = await Promise.all([getDepuradorConfig(), getDepuradorScheduleStatus()]);
+      this.state.depuradorConfig = config;
+      this.state.depuradorSchedule = schedule;
+      this.state.depuradorError = null;
+    } catch (error) {
+      this.state.depuradorError = formatError(error);
+    } finally {
+      this.state.depuradorBusy = false;
+      this.state.depuradorBusyLabel = null;
+      this.render();
+    }
+  }
+
+  private async saveDepuradorSettings(): Promise<void> {
+    const config = this.readDepuradorConfigFromForm();
+
+    if (!config) {
+      return;
+    }
+
+    await this.withDepuradorBusy("Guardando configuración...", async () => {
+      const saved = await saveDepuradorConfig(config);
+      const schedule = await setDepuradorSchedule(saved.schedule_enabled, saved.schedule_time);
+      this.state.depuradorConfig = saved;
+      this.state.depuradorSchedule = schedule;
+      this.state.depuradorError = null;
+      this.state.depuradorMessage = "Configuración guardada.";
+      this.showToast("Configuración guardada", "success");
+    });
+  }
+
+  private async chooseDepuradorFolder(): Promise<void> {
+    if (!isDepuradorAvailable()) {
+      this.showToast("El selector de carpeta está disponible en la app de escritorio", "error");
+      return;
+    }
+
+    const form = this.root.querySelector<HTMLFormElement>("#depurador-form");
+    const currentFolder = this.readFormInput(form, "folder")?.value || this.state.depuradorConfig?.folder;
+
+    try {
+      const selected = await selectDepuradorFolder(currentFolder);
+
+      if (!selected || !form) {
+        return;
+      }
+
+      const folderInput = this.readFormInput(form, "folder");
+      const quarantineInput = this.readFormInput(form, "quarantine_folder");
+
+      if (folderInput) {
+        folderInput.value = selected;
+      }
+
+      if (quarantineInput) {
+        quarantineInput.value = buildQuarantineFolder(selected);
+      }
+
+      if (this.state.depuradorConfig) {
+        this.state.depuradorConfig = {
+          ...this.state.depuradorConfig,
+          folder: selected,
+          quarantine_folder: buildQuarantineFolder(selected),
+          ignored_paths: [],
+        };
+        this.state.depuradorResult = null;
+        this.state.depuradorMessage = "Carpeta actualizada. Revisá PDFs para ver el nuevo listado.";
+        this.render();
+      }
+    } catch (error) {
+      this.showToast(formatError(error), "error");
+    }
+  }
+
+  private async previewDepurador(): Promise<void> {
+    const config = this.readDepuradorConfigFromForm();
+
+    if (!config) {
+      return;
+    }
+
+    await this.withDepuradorBusy("Revisando PDFs en la carpeta...", async () => {
+      const saved = await saveDepuradorConfig(config);
+      const [result, schedule] = await Promise.all([
+        previewDepuradorComprobantes(saved),
+        getDepuradorScheduleStatus(),
+      ]);
+      this.state.depuradorConfig = saved;
+      this.state.depuradorResult = result;
+      this.state.depuradorSchedule = schedule;
+      this.state.depuradorError = null;
+      this.state.depuradorMessage = `Revisión lista: ${result.detected} PDF${result.detected === 1 ? "" : "s"} detectado${result.detected === 1 ? "" : "s"}.`;
+      this.showToast(`Detectados: ${result.detected}`, result.errors.length > 0 ? "error" : "success");
+    });
+  }
+
+  private async runDepurador(): Promise<void> {
+    const config = this.readDepuradorConfigFromForm();
+
+    if (!config) {
+      return;
+    }
+
+    await this.withDepuradorBusy("Moviendo PDFs a cuarentena...", async () => {
+      const saved = await saveDepuradorConfig(config);
+      const moveResult = await runDepuradorComprobantes(saved);
+      this.state.depuradorBusyLabel = "Actualizando listado...";
+      this.render();
+      const [result, schedule] = await Promise.all([
+        previewDepuradorComprobantes(saved),
+        getDepuradorScheduleStatus(),
+      ]);
+      this.state.depuradorConfig = saved;
+      this.state.depuradorResult = result;
+      this.state.depuradorSchedule = schedule;
+      this.state.depuradorError = null;
+      this.state.depuradorMessage = `Se movieron ${moveResult.moved} PDF${moveResult.moved === 1 ? "" : "s"} a cuarentena. El listado ya muestra lo que queda en la carpeta.`;
+      this.showToast(
+        `PDFs movidos con éxito: ${moveResult.moved}`,
+        moveResult.errors.length > 0 ? "error" : "success",
+      );
+    });
+  }
+
+  private toggleDepuradorFile(path: string | undefined, list: string | undefined): void {
+    if (
+      !path ||
+      (list !== "candidate" && list !== "ignored") ||
+      !this.state.depuradorConfig ||
+      !this.state.depuradorResult ||
+      this.state.depuradorBusy
+    ) {
+      return;
+    }
+
+    const result = this.state.depuradorResult;
+    const source = list === "candidate" ? result.files : result.ignored_files;
+    const file = source.find((item) => samePath(item.path, path));
+
+    if (!file) {
+      return;
+    }
+
+    const nextFiles =
+      list === "candidate"
+        ? result.files.filter((item) => !samePath(item.path, path))
+        : sortDepuradorFiles([...result.files, file]);
+    const nextIgnoredFiles =
+      list === "candidate"
+        ? sortDepuradorFiles([...result.ignored_files, file])
+        : result.ignored_files.filter((item) => !samePath(item.path, path));
+    const nextIgnoredPaths =
+      list === "candidate"
+        ? addIgnoredPath(this.state.depuradorConfig.ignored_paths, path)
+        : removeIgnoredPath(this.state.depuradorConfig.ignored_paths, path);
+
+    this.state.depuradorConfig = {
+      ...this.state.depuradorConfig,
+      ignored_paths: nextIgnoredPaths,
+    };
+    this.state.depuradorResult = {
+      ...result,
+      detected: nextFiles.length,
+      files: nextFiles,
+      ignored_files: nextIgnoredFiles,
+    };
+    this.state.depuradorMessage =
+      list === "candidate"
+        ? "PDF marcado como No depurar. Doble click en esa lista para volver a incluirlo."
+        : "PDF vuelto a incluir para depuración.";
+    this.render();
+  }
+
+  private async openDepuradorQuarantine(): Promise<void> {
+    const config = this.readDepuradorConfigFromForm();
+
+    if (!config) {
+      return;
+    }
+
+    await this.withDepuradorBusy("Abriendo carpeta de cuarentena...", async () => {
+      const saved = await saveDepuradorConfig(config);
+      await openDepuradorQuarantineFolder();
+      this.state.depuradorConfig = saved;
+      this.state.depuradorError = null;
+    });
+  }
+
+  private async recycleDepuradorQuarantine(): Promise<void> {
+    const confirmed = window.confirm("¿Enviar todos los archivos de la cuarentena a la papelera de Windows?");
+
+    if (!confirmed) {
+      return;
+    }
+
+    await this.withDepuradorBusy("Enviando cuarentena a la papelera...", async () => {
+      const result = await recycleDepuradorQuarantine();
+      this.state.depuradorError = null;
+      this.state.depuradorMessage = `Se enviaron ${result.recycled} archivo${result.recycled === 1 ? "" : "s"} de cuarentena a la papelera.`;
+      this.showToast(
+        `Cuarentena enviada a papelera: ${result.recycled}`,
+        result.errors.length > 0 ? "error" : "success",
+      );
+    });
+  }
+
+  private async withDepuradorBusy(label: string, action: () => Promise<void>): Promise<void> {
+    if (!isDepuradorAvailable()) {
+      this.showToast("El depurador está disponible en la app de escritorio", "error");
+      return;
+    }
+
+    this.state.depuradorBusy = true;
+    this.state.depuradorBusyLabel = label;
+    this.state.depuradorError = null;
+    this.render();
+
+    try {
+      await action();
+    } catch (error) {
+      this.state.depuradorError = formatError(error);
+      this.showToast("No se pudo completar la depuración", "error");
+    } finally {
+      this.state.depuradorBusy = false;
+      this.state.depuradorBusyLabel = null;
+      this.render();
+    }
+  }
+
+  private readDepuradorConfigFromForm(): DepuradorConfig | null {
+    const form = this.root.querySelector<HTMLFormElement>("#depurador-form");
+    const current = this.state.depuradorConfig;
+
+    if (!form || !current) {
+      return null;
+    }
+
+    const formData = new FormData(form);
+    const maxAge = Number(this.formString(formData, "max_age_hours"));
+
+    return {
+      ...current,
+      folder: this.formString(formData, "folder").trim(),
+      quarantine_folder: this.formString(formData, "quarantine_folder").trim(),
+      max_age_hours: Number.isFinite(maxAge) ? Math.max(0, Math.min(720, Math.round(maxAge))) : current.max_age_hours,
+      require_no_spaces: formData.has("require_no_spaces"),
+      schedule_enabled: formData.has("schedule_enabled"),
+      schedule_time: this.formString(formData, "schedule_time").trim() || current.schedule_time,
+    };
+  }
+
+  private readFormInput(form: HTMLFormElement | null, name: string): HTMLInputElement | null {
+    const element = form?.elements.namedItem(name);
+
+    return element instanceof HTMLInputElement ? element : null;
   }
 
   private regenerateSnippet(id: string): void {
@@ -572,6 +922,11 @@ class App {
     this.state.editingSnippetId = null;
     this.state.isCreatingSnippet = false;
     this.state.settingsOpen = false;
+    this.state.depuradorOpen = false;
+    this.state.depuradorBusy = false;
+    this.state.depuradorBusyLabel = null;
+    this.state.depuradorError = null;
+    this.state.depuradorMessage = null;
 
     if (shouldRender) {
       this.render();
@@ -670,6 +1025,41 @@ class App {
     const value = formData.get(key);
     return typeof value === "string" ? value : "";
   }
+}
+
+function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return typeof error === "string" ? error : "Error inesperado";
+}
+
+function buildQuarantineFolder(folder: string): string {
+  const trimmed = folder.replace(/[\\/]+$/, "");
+  const separator = trimmed.includes("/") && !trimmed.includes("\\") ? "/" : "\\";
+
+  return `${trimmed}${separator}_MacaHelper_Depurador`;
+}
+
+function sortDepuradorFiles(files: DepuradorFile[]): DepuradorFile[] {
+  return [...files].sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" }));
+}
+
+function addIgnoredPath(paths: string[], path: string): string[] {
+  return paths.some((item) => samePath(item, path)) ? paths : [...paths, path];
+}
+
+function removeIgnoredPath(paths: string[], path: string): string[] {
+  return paths.filter((item) => !samePath(item, path));
+}
+
+function samePath(first: string, second: string): boolean {
+  return normalizePathKey(first) === normalizePathKey(second);
+}
+
+function normalizePathKey(path: string): string {
+  return path.replace(/\//g, "\\").toLocaleLowerCase("es");
 }
 
 function createId(prefix: SnippetKind): string {

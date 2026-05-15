@@ -1,16 +1,16 @@
-# Maca Helper ✨
+# Maca helper ✨
 
-Maca Helper es una app local para Windows para guardar frases, links, datos frecuentes e instrucciones, y copiarlos al portapapeles con un click.
+Maca helper es una app local para Windows para guardar frases, links, datos frecuentes e instrucciones, y copiarlos al portapapeles con un click.
 
 La idea es simple: abrís la app, tocás un renglón, ves el aviso de copiado y pegás manualmente donde quieras usar ese texto.
 
-> Maca Helper no se conecta a servicios externos, no usa IA online, no automatiza otras apps y no pega ni envía nada por su cuenta.
+> Maca helper no se conecta a servicios externos, no usa IA online, no automatiza otras apps y no pega ni envía nada por su cuenta.
 
 ---
 
 ## 🚀 Solo quiero usar la app
 
-Si solo querés instalar Maca Helper como usuario final, no necesitás programar ni instalar herramientas técnicas.
+Si solo querés instalar Maca helper como usuario final, no necesitás programar ni instalar herramientas técnicas.
 
 ### Descargar el instalador
 
@@ -19,7 +19,7 @@ Si solo querés instalar Maca Helper como usuario final, no necesitás programar
    - Recomendado: `.exe`.
    - Alternativa: `.msi`.
 3. Ejecutá el instalador.
-4. Abrí **Maca Helper**.
+4. Abrí **Maca helper**.
 5. Importá tu JSON privado si tenés uno.
 6. Tocá cualquier renglón para copiar.
 
@@ -93,7 +93,7 @@ Tenés tres caminos simples.
 
 ### 1. Editar desde la app
 
-1. Abrí Maca Helper.
+1. Abrí Maca helper.
 2. Tocá `Nuevo`.
 3. Cargá título, categoría y contenido.
 4. Guardá.
@@ -104,7 +104,7 @@ También podés tocar `Editar` sobre un renglón existente y reemplazarlo por tu
 
 Si ya tenés varias frases preparadas:
 
-1. Prepará un archivo `.json` con el formato de Maca Helper.
+1. Prepará un archivo `.json` con el formato de Maca helper.
 2. Abrí la app.
 3. Tocá `Importar`.
 4. Elegí el archivo.
@@ -119,7 +119,7 @@ Si estás trabajando desde el repositorio:
 1. Copiá `seed/snippets.local.template.json`.
 2. Renombrá la copia a `seed/snippets.local.json`.
 3. Editá `seed/snippets.local.json` con tus frases reales.
-4. Abrí Maca Helper.
+4. Abrí Maca helper.
 5. Tocá `Importar`.
 6. Elegí `seed/snippets.local.json`.
 
@@ -179,7 +179,7 @@ Recomendación: guardá esos backups fuera del repositorio, o dentro de `backups
 
 ## 🛡️ Límites de la app
 
-Maca Helper está pensada como una consola local de copiado.
+Maca helper está pensada como una consola local de copiado.
 
 La app:
 
@@ -295,9 +295,9 @@ GitHub Actions se encarga de:
 
 ## ❓ Por qué no es solo `npm install`
 
-Para usar Maca Helper como usuario final, sí es simple: descargás el instalador y listo.
+Para usar Maca helper como usuario final, sí es simple: descargás el instalador y listo.
 
-`npm install` solo aplica si vas a desarrollar la app. Maca Helper usa Tauri, y Tauri compila una aplicación nativa de Windows usando Rust y herramientas nativas del sistema. Por eso:
+`npm install` solo aplica si vas a desarrollar la app. Maca helper usa Tauri, y Tauri compila una aplicación nativa de Windows usando Rust y herramientas nativas del sistema. Por eso:
 
 - Usuario final: descarga `.exe` o `.msi`.
 - Desarrollo web: Docker.
