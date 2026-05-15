@@ -19,7 +19,9 @@ export function loadAppData(): AppData {
     const result = validateAppData(parsed);
 
     if (result.ok && result.data) {
-      return result.data;
+      const data = normalizeStoredData(result.data);
+      saveAppData(data);
+      return data;
     }
   } catch {
     // Fall through to seed data.
@@ -28,8 +30,22 @@ export function loadAppData(): AppData {
   return cloneInitialData();
 }
 
+function normalizeStoredData(data: AppData): AppData {
+  if (data.settings.appName !== "Maca Helper") {
+    return data;
+  }
+
+  return {
+    ...data,
+    settings: {
+      ...data.settings,
+      appName: "Maca helper",
+    },
+  };
+}
+
 export function saveAppData(data: AppData): void {
-  localStorage.setItem(APP_DATA_KEY, JSON.stringify(data));
+  localStorage.setItem(APP_DATA_KEY, JSON.stringify(normalizeStoredData(data)));
 }
 
 export function loadGeneratedSnippets(): GeneratedSnippetMap {

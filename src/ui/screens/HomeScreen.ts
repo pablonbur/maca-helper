@@ -36,6 +36,7 @@ export function renderHomeScreen(view: HomeScreenView): string {
           <button class="secondary-button compact-button" type="button" data-action="toggle-theme">${view.theme === "dark" ? "Claro" : "Oscuro"}</button>
           <button class="secondary-button compact-button" type="button" data-action="import-json">Importar</button>
           <button class="secondary-button compact-button" type="button" data-action="export-json">Exportar</button>
+          <button class="secondary-button compact-button" type="button" data-action="open-depurador">Depuración</button>
           <button class="secondary-button compact-button" type="button" data-action="open-settings">Avanzado</button>
           <button class="primary-button compact-button" type="button" data-action="new-snippet">Nuevo</button>
           <input class="visually-hidden" data-role="import-input" type="file" accept="application/json,.json" />

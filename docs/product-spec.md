@@ -1,4 +1,4 @@
-# Product Spec - Maca Helper
+# Product Spec - Maca helper
 
 ## Objetivo
 
